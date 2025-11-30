@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './views/Dashboard';
@@ -7,12 +6,17 @@ import Quiz from './views/Quiz';
 import Learn from './views/Learn';
 import Advisor from './views/Advisor';
 import Market from './views/Market';
+import AuthModal from './components/AuthModal';
 import { ViewState, UserStats } from './types';
 import { Menu } from 'lucide-react';
+import { supabase } from './services/supabaseClient';
+import { Session } from '@supabase/supabase-js';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.DASHBOARD);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   // Centralized User State
   const [userStats, setUserStats] = useState<UserStats>({
@@ -21,16 +25,110 @@ const App: React.FC = () => {
     quizScore: 0,
     walletBalance: 10000,
     holdings: [],
-    watchlist: ['TCH', 'BIO', 'AIX', 'GRN'] // Added more defaults
+    watchlist: ['TCH', 'BIO', 'AIX', 'GRN'],
+    completedChapterIds: []
   });
 
-  // Effect to patch userStats if new fields are added (like watchlist) and state is stale
+  // 1. Check for active session on load
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) fetchProfile(session.user.id);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) fetchProfile(session.user.id);
+      else {
+          // Reset to defaults on logout
+          setUserStats({
+            xp: 850,
+            lessonsCompleted: 3,
+            quizScore: 0,
+            walletBalance: 10000,
+            holdings: [],
+            watchlist: ['TCH', 'BIO', 'AIX', 'GRN'],
+            completedChapterIds: []
+          });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // 2. Fetch User Profile from Supabase
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+          console.warn('Could not fetch profile (Table might not exist yet). Using local state.');
+          return;
+      }
+
+      if (data) {
+        setUserStats({
+          xp: data.xp || 850,
+          lessonsCompleted: data.lessons_completed || 3,
+          quizScore: data.quiz_score || 0,
+          walletBalance: data.wallet_balance !== null ? data.wallet_balance : 10000,
+          holdings: data.holdings || [],
+          watchlist: data.watchlist || ['TCH', 'BIO', 'AIX', 'GRN'],
+          completedChapterIds: data.completed_chapter_ids || []
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
+  // 3. Debounced Save to Supabase
+  useEffect(() => {
+    if (!session) return;
+
+    const saveData = setTimeout(async () => {
+      try {
+        const { error } = await supabase
+          .from('user_profiles')
+          .upsert({
+            id: session.user.id,
+            xp: userStats.xp,
+            lessons_completed: userStats.lessonsCompleted,
+            quiz_score: userStats.quizScore,
+            wallet_balance: userStats.walletBalance,
+            holdings: userStats.holdings,
+            watchlist: userStats.watchlist,
+            completed_chapter_ids: userStats.completedChapterIds,
+            updated_at: new Date()
+          });
+
+        if (error) {
+             // Silent fail if table doesn't exist to prevent spamming console
+             // console.warn('Sync failed:', error.message);
+        }
+      } catch (err) {
+        // Ignore
+      }
+    }, 2000); // Save after 2 seconds of inactivity
+
+    return () => clearTimeout(saveData);
+  }, [userStats, session]);
+
+
+  // Ensure userStats has required fields (patch for stale state)
   useEffect(() => {
     setUserStats(prev => {
       const updates: Partial<UserStats> = {};
       if (!prev.watchlist) updates.watchlist = ['TCH', 'BIO', 'AIX', 'GRN'];
       if (prev.walletBalance === undefined) updates.walletBalance = 10000;
       if (!prev.holdings) updates.holdings = [];
+      if (!prev.completedChapterIds) updates.completedChapterIds = [];
       
       if (Object.keys(updates).length > 0) {
         return { ...prev, ...updates };
@@ -56,7 +154,6 @@ const App: React.FC = () => {
       case ViewState.ADVISOR:
         return <Advisor />;
       case ViewState.MARKET:
-        // KEY CHANGE: Unique key forces unmount/remount to fix any stale state issues
         return <Market key="market-final-fix" userStats={userStats} updateStats={updateStats} />;
       default:
         return <Dashboard onNavigate={setCurrentView} userStats={userStats} />;
@@ -75,7 +172,11 @@ const App: React.FC = () => {
         onNavigate={setCurrentView}
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
+        session={session}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
       />
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
         {/* Mobile Header */}
