@@ -145,10 +145,10 @@ export const calculateRD = (
 
 export const calculatePPF = (
   yearlyInvestment: number,
-  _rateUnused: number, 
+  rate: number, 
   years: number
 ): CalculationResult => {
-  const r = _rateUnused / 100;
+  const r = rate / 100;
   
   let balance = 0;
   const breakdown = [];
@@ -223,8 +223,8 @@ export const calculateGoal = (
 
 export const calculateBudget = (
   income: number,
-  _rateUnused: number,
-  _yearsUnused: number
+  rate: number,
+  years: number
 ): CalculationResult => {
   // 50-30-20 Rule
   const needs = income * 0.5;

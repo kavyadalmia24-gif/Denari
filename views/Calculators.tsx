@@ -14,9 +14,19 @@ import {
 } from '../utils/calculations';
 import { CalculationResult } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { TrendingUp, PiggyBank, Landmark, Target, AlertTriangle, Briefcase, Coins, Wallet, Percent, PieChart as PieIcon } from 'lucide-react';
+import { TrendingUp, PiggyBank, Landmark, Target, AlertTriangle, Briefcase, Coins, Wallet, Percent, PieChart as PieIcon, LucideIcon } from 'lucide-react';
 
 type CalculatorType = 'SIP' | 'LUMPSUM' | 'EMI' | 'FD' | 'RD' | 'PPF' | 'INFLATION' | 'GOAL' | 'BUDGET' | 'SIMPLE' | 'COMPOUND';
+
+interface CalculatorConfig {
+  label: string;
+  icon: LucideIcon;
+  inputs: { amount: string; rate: string; years: string };
+  defaults: { amount: number; rate: number; years: number };
+  calculate: (amount: number, rate: number, years: number) => CalculationResult;
+  resultLabels: { invested: string; interest: string; total: string };
+  colors: string[];
+}
 
 const Calculators: React.FC = () => {
   const [activeTab, setActiveTab] = useState<CalculatorType>('SIP');
@@ -30,7 +40,7 @@ const Calculators: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Configuration for each calculator type
-  const config = {
+  const config: Record<CalculatorType, CalculatorConfig> = {
     SIP: {
       label: 'SIP Calculator',
       icon: TrendingUp,
@@ -142,10 +152,9 @@ const Calculators: React.FC = () => {
 
   useEffect(() => {
     const calcFunc = config[activeTab].calculate;
-    // @ts-ignore
     const res = calcFunc(amount, rate, years);
     setResult(res);
-  }, [activeTab, amount, rate, years]);
+  }, [activeTab, amount, rate, years, config]);
 
   const activeConfig = config[activeTab];
   const COLORS = activeConfig.colors;
@@ -240,18 +249,18 @@ const Calculators: React.FC = () => {
                             type="number" 
                             value={rate}
                             onChange={(e) => setRate(Number(e.target.value))}
-                            className="w-full pl-4 pr-10 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 outline-none transition-all font-heading font-bold text-2xl text-slate-900 shadow-sm"
+                            className="w-full pl-4 pr-10 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 outline-none transition-all font-heading font-bold text-xl text-slate-900 shadow-sm"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">%</span>
+                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
                         </div>
-                        <input 
-                        type="range" 
-                        min={1} 
-                        max={30} 
-                        step={0.1}
-                        value={rate}
-                        onChange={(e) => setRate(Number(e.target.value))}
-                        className="w-full mt-4 accent-indigo-600 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer"
+                         <input 
+                            type="range" 
+                            min="1" 
+                            max="30" 
+                            step="0.5"
+                            value={rate}
+                            onChange={(e) => setRate(Number(e.target.value))}
+                            className="w-full mt-4 accent-indigo-600 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer"
                         />
                     </div>
 
@@ -260,196 +269,122 @@ const Calculators: React.FC = () => {
                         {activeConfig.inputs.years}
                         </label>
                         <div className="relative">
-                        <input 
-                            type="number" 
-                            value={years}
-                            onChange={(e) => setYears(Number(e.target.value))}
-                            className="w-full px-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 outline-none transition-all font-heading font-bold text-2xl text-slate-900 shadow-sm"
-                        />
+                            <input 
+                                type="number" 
+                                value={years}
+                                onChange={(e) => setYears(Number(e.target.value))}
+                                className="w-full pl-4 pr-10 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 outline-none transition-all font-heading font-bold text-xl text-slate-900 shadow-sm"
+                            />
+                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">Yr</span>
                         </div>
                         <input 
-                        type="range" 
-                        min={1} 
-                        max={50} 
-                        step={1}
-                        value={years}
-                        onChange={(e) => setYears(Number(e.target.value))}
-                        className="w-full mt-4 accent-indigo-600 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer"
+                            type="range" 
+                            min="1" 
+                            max="50" 
+                            step="1"
+                            value={years}
+                            onChange={(e) => setYears(Number(e.target.value))}
+                            className="w-full mt-4 accent-indigo-600 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer"
                         />
                     </div>
                   </>
                 )}
             </div>
-
-            {/* Special Output Cards for EMI & Goal */}
-            {activeTab === 'EMI' && result?.monthlyEMI && (
-                <div className="mt-8 p-6 bg-slate-900 rounded-2xl text-center shadow-xl shadow-slate-200 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
-                    <p className="text-xs font-bold mb-1 opacity-60 uppercase tracking-widest">Monthly EMI</p>
-                    <p className="text-4xl font-heading font-bold">${result.monthlyEMI.toLocaleString()}</p>
-                </div>
-            )}
-            
-            {activeTab === 'GOAL' && result?.monthlyEMI && (
-                <div className="mt-8 p-6 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl text-center shadow-xl shadow-emerald-200 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
-                    <p className="text-xs font-bold mb-1 opacity-80 uppercase tracking-widest">Required Monthly Savings</p>
-                    <p className="text-4xl font-heading font-bold">${result.monthlyEMI.toLocaleString()}</p>
-                </div>
-            )}
           </div>
         </div>
 
         {/* Visualization */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-card p-6 rounded-[2rem] border border-white/60 flex flex-col items-center justify-center min-h-[340px] bg-white/40">
-               <h3 className="text-slate-400 font-bold mb-6 uppercase tracking-wider text-[10px]">Asset Allocation</h3>
-               {result && (
-                 <div className="w-full h-64 relative">
+        <div className="lg:col-span-8 flex flex-col gap-6">
+           {/* Summary Cards */}
+           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+               {[
+                   { label: activeConfig.resultLabels.invested, value: result?.investedAmount, color: 'text-slate-600', bg: 'bg-white' },
+                   { label: activeConfig.resultLabels.interest, value: result?.totalInterest, color: 'text-indigo-600', bg: 'bg-indigo-50 border-indigo-100' },
+                   { label: activeConfig.resultLabels.total, value: result?.totalValue, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' }
+               ].map((item, idx) => (
+                   <div key={idx} className={`${item.bg} p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center`}>
+                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{item.label}</p>
+                       <p className={`text-2xl font-heading font-extrabold ${item.color}`}>${item.value?.toLocaleString()}</p>
+                   </div>
+               ))}
+           </div>
+
+           {/* Chart */}
+           <div className="glass-card p-8 rounded-[2rem] border border-white/60 bg-white/60 shadow-lg min-h-[400px] flex flex-col">
+               <h3 className="font-heading font-bold text-slate-800 mb-6 flex items-center gap-2">
+                   <TrendingUp className="text-indigo-600" /> Growth Projection
+               </h3>
+               <div className="flex-1">
                    <ResponsiveContainer width="100%" height="100%">
-                     <PieChart>
-                       <Pie
-                         data={chartData}
-                         cx="50%"
-                         cy="50%"
-                         innerRadius={70}
-                         outerRadius={90}
-                         paddingAngle={5}
-                         dataKey="value"
-                         stroke="none"
-                         cornerRadius={8}
-                       >
-                         {chartData.map((entry, index) => (
-                           <Cell key={`cell-${index}`} fill={entry.color} />
-                         ))}
-                       </Pie>
-                       <Tooltip 
-                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontFamily: 'Outfit' }}
-                          formatter={(val: number) => `$${val.toLocaleString()}`}
-                       />
-                     </PieChart>
+                       {activeTab === 'BUDGET' ? (
+                            <PieChart>
+                                <Pie
+                                    data={chartData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={80}
+                                    outerRadius={120}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {chartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    formatter={(value: number) => `$${value.toLocaleString()}`}
+                                />
+                            </PieChart>
+                       ) : (
+                           <AreaChart data={result?.breakdown || []}>
+                               <defs>
+                                   <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                                       <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.3}/>
+                                       <stop offset="95%" stopColor={COLORS[0]} stopOpacity={0}/>
+                                   </linearGradient>
+                               </defs>
+                               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                               <XAxis 
+                                    dataKey="year" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 12, fill: '#94a3b8'}}
+                                    tickFormatter={(val) => `Yr ${val}`}
+                                />
+                               <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 12, fill: '#94a3b8'}}
+                                    tickFormatter={(val) => `$${(val/1000).toFixed(0)}k`}
+                                />
+                               <Tooltip 
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                                />
+                               <Area 
+                                    type="monotone" 
+                                    dataKey="balance" 
+                                    stroke={COLORS[0]} 
+                                    strokeWidth={3} 
+                                    fillOpacity={1} 
+                                    fill="url(#colorBalance)" 
+                                    name="Total Value"
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="invested" 
+                                    stroke={COLORS[1]} 
+                                    strokeWidth={3} 
+                                    strokeDasharray="5 5"
+                                    fill="none" 
+                                    name="Invested"
+                                />
+                           </AreaChart>
+                       )}
                    </ResponsiveContainer>
-                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="text-center">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Total</span>
-                            <div className="text-2xl font-bold text-slate-800">
-                                ${(activeTab === 'BUDGET' ? amount : result.totalValue).toLocaleString(undefined, { notation: 'compact' })}
-                            </div>
-                        </div>
-                   </div>
-                 </div>
-               )}
-               <div className="flex gap-4 mt-4 justify-center flex-wrap">
-                 {chartData.map((entry, idx) => (
-                   <div key={idx} className="flex items-center gap-2">
-                     <div className="w-3 h-3 rounded-full" style={{ background: entry.color }} />
-                     <span className="text-xs font-bold text-slate-500">{entry.name.split('(')[0]}</span>
-                   </div>
-                 ))}
                </div>
-            </div>
-
-            <div className="glass-card p-8 rounded-[2rem] border border-white/60 flex flex-col justify-center gap-5 bg-white/40">
-               {activeTab === 'BUDGET' ? (
-                 <>
-                   <div className="bg-white/60 p-5 rounded-2xl border border-white shadow-sm">
-                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Needs (50%)</p>
-                     <p className="text-3xl font-heading font-bold text-blue-500">${result?.investedAmount.toLocaleString()}</p>
-                   </div>
-                   <div className="bg-white/60 p-5 rounded-2xl border border-white shadow-sm">
-                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Wants (30%)</p>
-                     <p className="text-3xl font-heading font-bold text-pink-500">${result?.totalInterest.toLocaleString()}</p>
-                   </div>
-                   <div className="bg-white/60 p-5 rounded-2xl border border-white shadow-sm">
-                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Savings (20%)</p>
-                     <p className="text-3xl font-heading font-bold text-emerald-500">${result?.totalValue.toLocaleString()}</p>
-                   </div>
-                 </>
-               ) : (
-                 <>
-                  <div className="bg-white/60 p-5 rounded-2xl border border-white shadow-sm">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{activeConfig.resultLabels.invested}</p>
-                    <p className="text-3xl font-heading font-bold text-slate-900">${result?.investedAmount.toLocaleString()}</p>
-                  </div>
-                  
-                  <div className="bg-white/60 p-5 rounded-2xl border border-white shadow-sm">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{activeConfig.resultLabels.interest}</p>
-                    <p className="text-3xl font-heading font-bold" style={{ color: COLORS[1] }}>
-                        {activeTab === 'EMI' || activeTab === 'INFLATION' ? '-' : '+'}
-                        ${result?.totalInterest.toLocaleString()}
-                    </p>
-                  </div>
-                  
-                  <div className="mt-2 pt-6 border-t border-slate-200/50">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{activeConfig.resultLabels.total}</p>
-                    <p className="text-4xl font-heading font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700">
-                        ${result?.totalValue.toLocaleString()}
-                    </p>
-                  </div>
-                 </>
-               )}
-            </div>
-          </div>
-
-          {activeTab !== 'BUDGET' && (
-            <div className="glass-card p-8 rounded-[2rem] border border-white/60 shadow-xl bg-white/40">
-              <h3 className="text-slate-400 font-bold mb-6 uppercase tracking-wider text-[10px]">Projection Graph</h3>
-              <div className="h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={result?.breakdown || []} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colorInvested" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={COLORS[0]} stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis 
-                          dataKey="year" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
-                          dy={10}
-                      />
-                      <YAxis 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
-                          tickFormatter={(val) => `$${val/1000}k`} 
-                      />
-                      <Tooltip 
-                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontFamily: 'Outfit', padding: '12px' }}
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
-                        cursor={{stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4'}}
-                      />
-                      <Area 
-                          type="monotone" 
-                          dataKey="balance" 
-                          stroke={COLORS[1]} 
-                          strokeWidth={4} 
-                          fillOpacity={1} 
-                          fill="url(#colorValue)" 
-                          name={activeConfig.resultLabels.total}
-                      />
-                      <Area 
-                          type="monotone" 
-                          dataKey="invested" 
-                          stroke={COLORS[0]} 
-                          strokeWidth={4} 
-                          fillOpacity={1} 
-                          fill="url(#colorInvested)" 
-                          name={activeConfig.resultLabels.invested} 
-                      />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+           </div>
         </div>
       </div>
     </div>

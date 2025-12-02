@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { 
   TrendingUp, 
@@ -16,7 +17,20 @@ import {
   Globe2,
   Zap,
   Lock,
-  BookOpen
+  BookOpen,
+  Layers,
+  FileText,
+  Users,
+  Scale,
+  BarChart4,
+  Factory,
+  Home,
+  AlertTriangle,
+  Compass,
+  CreditCard,
+  Brain,
+  HeartHandshake,
+  Sun
 } from 'lucide-react';
 import { generateLessonContent } from '../services/geminiService';
 import { GeneratedLessonData, UserStats } from '../types';
@@ -114,6 +128,214 @@ const rawCurriculum = [
     ]
   },
   {
+    id: 'youth-family',
+    title: 'Youth & Family Finance',
+    description: 'Managing money across generations and family dynamics.',
+    icon: Users,
+    color: 'lime',
+    accentColor: 'from-lime-500 to-green-600',
+    modules: [
+        { title: 'Introducing Kids to Money', desc: 'The value of money, needs vs wants for kids, earning allowance' },
+        { title: 'Pocket Money & Smart Choices', desc: 'Weekly budgeting, saving for toys, smart spending choices' },
+        { title: 'Joint Accounts & Family Budgeting', desc: 'Couples banking, sharing expenses, financial transparency' },
+        { title: 'Wedding Finance Planning', desc: 'Budgeting for big days, guest lists vs costs, saving strategy' },
+        { title: 'Parenting for Financial Success', desc: 'Saving for education, child insurance plans, raising money-smart kids' }
+    ]
+  },
+  {
+    id: 'wellness',
+    title: 'Work-Life & Money Wellness',
+    description: 'Balancing professional success with personal well-being and financial health.',
+    icon: Sun,
+    color: 'amber',
+    accentColor: 'from-amber-400 to-yellow-500',
+    modules: [
+        { title: 'Financial Stress Management', desc: 'Identifying triggers, coping mechanisms, mindfulness techniques' },
+        { title: 'Healthy Work-Life Budgeting', desc: 'Budgeting for leisure, self-care funds, hobby investment' },
+        { title: 'Money Habits for Mental Wellness', desc: 'Mindful spending, financial therapy basics, abundance mindset' },
+        { title: 'Burnout Prevention for Earners', desc: 'Work-life balance strategies, taking sabbaticals, outsourcing chores' },
+        { title: 'Sleep, Productivity & Wealth', desc: 'Sleep hygiene ROI, energy management, health as wealth' },
+        { title: 'Decision Fatigue & Smart Spending', desc: 'Automating decisions, simplified lifestyle, reducing choice overload' }
+    ]
+  },
+  {
+    id: 'legal-rights',
+    title: 'Legal & Consumer Rights',
+    description: 'Protect yourself with knowledge of laws and regulations.',
+    icon: Scale,
+    color: 'stone',
+    accentColor: 'from-stone-500 to-neutral-600',
+    modules: [
+        { title: 'Banking Ombudsman Guide', desc: 'Resolving bank disputes, filing complaints, timeline and rights' },
+        { title: 'Insurance Claim Rights', desc: 'Claim process, documentation, rejection reasons, appeals' },
+        { title: 'Fraud Reporting & Recovery', desc: 'Cyber crime portal, blocking cards, legal recourse' },
+        { title: 'Investment Regulations & SEBI', desc: 'SEBI role, investor protection fund, knowing your rights' },
+        { title: 'Buying Online Consumer Rights', desc: 'Return policies, chargebacks, consumer court for e-commerce' }
+    ]
+  },
+  {
+    id: 'pro-tools',
+    title: 'Professional Investment Tools',
+    description: 'Advanced instruments for the serious investor.',
+    icon: BarChart4,
+    color: 'red',
+    accentColor: 'from-red-500 to-rose-600',
+    modules: [
+        { title: 'Options Trading for Beginners', desc: 'Call and Put basics, premiums, strike prices, risk' },
+        { title: 'Futures Contracts Explained', desc: 'Forward contracts, expiration dates, margin requirements' },
+        { title: 'Index Funds vs ETFs', desc: 'Passive investing, expense ratios, liquidity differences' },
+        { title: 'Risk Indicators (VIX, Beta)', desc: 'Understanding Beta, VIX volatility, Sharpe ratio' },
+        { title: 'Algo Trading Basics', desc: 'Automated strategies, backtesting basics, execution speed' }
+    ]
+  },
+  {
+    id: 'business-deeper',
+    title: 'Business & Entrepreneurship (Advanced)',
+    description: 'Deep dive into the financials of running a business.',
+    icon: Factory,
+    color: 'amber',
+    accentColor: 'from-amber-500 to-yellow-600',
+    modules: [
+        { title: 'Cost Structure Optimization', desc: 'Fixed vs variable costs, break-even analysis, margins' },
+        { title: 'Business Funding & Loans', desc: 'Bootstrapping, angel investors, venture capital, bank loans' },
+        { title: 'Understanding Valuations', desc: 'Pre-money vs post-money, equity dilution, valuation methods' },
+        { title: 'Unit Economics Simplified', desc: 'CAC vs LTV, contribution margin, profitability per unit' },
+        { title: 'Small Business Taxation', desc: 'GST registration basics, input tax credit, corporate tax' }
+    ]
+  },
+  {
+    id: 'real-world',
+    title: 'Real World Money Skills',
+    description: 'Navigating big life purchases and contracts.',
+    icon: Home,
+    color: 'cyan',
+    accentColor: 'from-cyan-500 to-sky-600',
+    modules: [
+        { title: 'Home Buying Step-by-Step', desc: 'Down payments, home loan eligibility, hidden costs' },
+        { title: 'Rental Agreements & Rights', desc: 'Lease terms, security deposits, tenant rights, agreements' },
+        { title: 'Land / Property Document Basics', desc: 'Sale deed, khata, encumbrance certificate verification' },
+        { title: 'Car Buying vs Leasing', desc: 'Depreciation, loan vs lease analysis, insurance add-ons' },
+        { title: 'Co-Living & Flatmate Finances', desc: 'Splitting bills, managing shared expenses, conflict resolution' }
+    ]
+  },
+  {
+    id: 'risk-crisis',
+    title: 'Money Risk & Crisis Handling',
+    description: 'Preparing for and surviving financial storms.',
+    icon: AlertTriangle,
+    color: 'rose',
+    accentColor: 'from-rose-500 to-pink-600',
+    modules: [
+        { title: 'Emergency Fund Blueprint', desc: 'Calculating 6 months expenses, liquidity, where to park it' },
+        { title: 'Handling Job Loss Financially', desc: 'Severance management, cutting non-essentials, health insurance gap' },
+        { title: 'Managing Inflation in Daily Life', desc: 'Purchasing power, adjusting budget, inflation-beating assets' },
+        { title: 'Economic Recession Survival Plan', desc: 'Job security measures, cash hoarding, defensive investing' },
+        { title: 'Personal Disaster Finance Plan', desc: 'Insurance coverage, digital document locker, family access' }
+    ]
+  },
+  {
+    id: 'career-income',
+    title: 'Career & Income Building',
+    description: 'Maximizing your earning potential and professional value.',
+    icon: Compass,
+    color: 'sky',
+    accentColor: 'from-sky-500 to-blue-600',
+    modules: [
+        { title: 'Portfolio & Resume Basics', desc: 'Showcasing work, resume optimization, linkedin presence' },
+        { title: 'Freelancing Platforms & Payments', desc: 'Upwork and Fiverr, client contracts, invoicing, getting paid' },
+        { title: 'Building a Side Business', desc: 'Idea validation, low-cost startup, managing time' },
+        { title: 'Personal Branding Basics', desc: 'Online reputation, networking, thought leadership' },
+        { title: 'Pricing Your Skills for Profit', desc: 'Hourly vs value-based, negotiation scripts, raising rates' }
+    ]
+  },
+  {
+    id: 'credit-mastery',
+    title: 'Borrowing & Credit Mastery',
+    description: 'Advanced strategies for leveraging credit and loans.',
+    icon: CreditCard,
+    color: 'violet',
+    accentColor: 'from-violet-500 to-purple-600',
+    modules: [
+        { title: 'Credit Utilization Deep Dive', desc: 'Credit limits, impact on score, optimal ratio management' },
+        { title: 'Loan Settlement & CIBIL Repair', desc: 'Settlement vs closing, impact on history, negotiating with banks' },
+        { title: 'Balance Transfer Smart Strategy', desc: 'Interest arbitrage, processing fees, hidden terms' },
+        { title: 'Credit Card Reward Optimization', desc: 'Airmiles, cashback strategies, maximizing redemption' },
+        { title: 'BNPL Risks & Hacks', desc: 'Buy Now Pay Later hidden interest, credit score impact, traps' }
+    ]
+  },
+  {
+    id: 'money-psych',
+    title: 'Money Psychology & Mindset',
+    description: 'Mastering the mental game of wealth.',
+    icon: Brain,
+    color: 'fuchsia',
+    accentColor: 'from-fuchsia-500 to-pink-600',
+    modules: [
+        { title: 'Overcoming Fear of Money', desc: 'Scarcity mindset, abundance mindset, overcoming anxiety' },
+        { title: 'Building Wealth Habits', desc: 'Automating savings, cue-routine-reward, compound habits' },
+        { title: 'Minimalism & Money', desc: 'Intentional spending, decluttering finances, value-based living' },
+        { title: 'Financial Decision-Making Biases', desc: 'Sunk cost fallacy, confirmation bias, herd mentality' },
+        { title: 'Emotional Spending Control', desc: 'Retail therapy triggers, the 24-hour rule, mindfulness' }
+    ]
+  },
+  {
+    id: 'relationships',
+    title: 'Money & Relationships',
+    description: 'Navigating finances with partners and others.',
+    icon: HeartHandshake,
+    color: 'pink',
+    accentColor: 'from-pink-500 to-rose-600',
+    modules: [
+         { title: 'How to Negotiate Salary & Deals', desc: 'Salary research, making the ask, handling counter-offers' }
+    ]
+  },
+  {
+    id: 'alternative',
+    title: 'Alternative Investments',
+    description: 'Beyond stocks and bonds: Gold, Real Estate, and more.',
+    icon: Layers,
+    color: 'pink',
+    accentColor: 'from-pink-500 to-rose-600',
+    modules: [
+        { title: 'Gold vs Digital Gold', desc: 'Physical gold, SGBs, ETFs, digital gold apps compared' },
+        { title: 'Bonds & Govt Securities', desc: 'T-Bills, G-Secs, corporate bonds, yield curves' },
+        { title: 'REITs & InvITs', desc: 'Real Estate Investment Trusts, Infrastructure Trusts basics' },
+        { title: 'Commodity Investing', desc: 'Silver, oil, agricultural commodities trading basics' },
+        { title: 'Art & Luxury Investing', desc: 'Investing in watches, art, wine, collectibles' },
+        { title: 'International Investing', desc: 'Buying US stocks, LRS limits, global ETFs' }
+    ]
+  },
+  {
+    id: 'global',
+    title: 'Global Financial Literacy',
+    description: 'Understanding money on a planetary scale.',
+    icon: Globe2,
+    color: 'cyan',
+    accentColor: 'from-cyan-500 to-sky-600',
+    modules: [
+        { title: 'Currency & Forex Basics', desc: 'Exchange rates, forex market structure, currency strength' },
+        { title: 'Geopolitics & Markets', desc: 'How wars, elections, and policy shifts affect money' },
+        { title: 'Trade Deficits Explained', desc: 'Imports vs exports, balance of payments, currency impact' },
+        { title: 'Crypto Regulations', desc: 'Global crypto laws, taxation, bans and adoption' },
+        { title: 'NRI Taxation Basics', desc: 'Residential status, DTAA, taxable income for NRIs' }
+    ]
+  },
+  {
+    id: 'tools',
+    title: 'Practical Financial Tools',
+    description: 'Hands-on training for real-world money management.',
+    icon: FileText,
+    color: 'slate',
+    accentColor: 'from-slate-500 to-gray-600',
+    modules: [
+        { title: 'Excel for Finance', desc: 'NPV, XIRR, PMT formulas, loan amortization sheets' },
+        { title: 'Tax Filing Step-by-Step', desc: 'ITR-1 vs ITR-4, e-filing portal guide, claiming refunds' },
+        { title: 'Salary Slip Breakdown', desc: 'HRA, DA, LTA, PF deductions, in-hand calculation' },
+        { title: 'Reading Bank Statements', desc: 'Tracking flows, spotting hidden charges, reconciliation' },
+        { title: 'Brokerage App Walkthrough', desc: 'Placing orders, GTT, analyzing portfolio reports' }
+    ]
+  },
+  {
     id: 'growth-life',
     title: 'Financial Growth & Life Skills',
     description: 'Long-term planning, psychology, and security.',
@@ -132,7 +354,7 @@ const rawCurriculum = [
     id: 'bonus',
     title: 'Bonus Specialized Modules',
     description: 'Expert topics on economy, real estate, and business.',
-    icon: Globe2,
+    icon: BookOpen,
     color: 'violet',
     accentColor: 'from-violet-500 to-purple-600',
     modules: [
@@ -616,7 +838,7 @@ const Learn: React.FC<LearnProps> = ({ userStats, updateStats }) => {
         <div className="max-w-2xl">
             <h2 className="text-4xl font-heading font-extrabold text-slate-900 mb-4">Denari Academy</h2>
             <p className="text-slate-500 text-xl font-light">
-            32 Modules. 6 Learning Tracks. Infinite Knowledge.
+            {tracks.reduce((acc, t) => acc + t.modules.length, 0)} Modules. {tracks.length} Learning Tracks. Infinite Knowledge.
             </p>
         </div>
         <div className="glass-card px-6 py-3 rounded-2xl border border-amber-200 flex items-center gap-3 text-amber-700 font-bold whitespace-nowrap shadow-sm bg-amber-50/50">
