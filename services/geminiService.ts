@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeneratedLessonData } from "../types";
 
-const apiKey = process.env.API_KEY || '';
+const apiKey = process.env.AIzaSyAe0k4O9ACw5avZyo3rc9WAS5_MQMgLIIU || '';
 
 // Initialize the client
 const ai = new GoogleGenAI({ apiKey });
